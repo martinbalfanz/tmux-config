@@ -20,24 +20,44 @@ version_ge() { [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" = "$2" ]; }
 
 detect_os() {
   case "$(uname -s)" in
-    Darwin) OS=macos ;;
-    Linux)  [ -f /etc/debian_version ] && OS=debian || OS=linux ;;
+    Darwin) OS=macos; return ;;
+    Linux) ;;
     *) die "Unsupported OS: $(uname -s)" ;;
   esac
+  # Linux: distro-detect via /etc/os-release (works for Ubuntu, Debian,
+  # Arch, Fedora, and derivatives that set ID_LIKE).
+  if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    case " ${ID:-} ${ID_LIKE:-} " in
+      *debian*|*ubuntu*) OS=debian ;;
+      *arch*)            OS=arch ;;
+      *fedora*|*rhel*)   OS=fedora ;;
+      *) OS=linux ;;
+    esac
+  else
+    OS=linux
+  fi
 }
 
 pkg_install() {
   # $@ = package names
+  local sudo=""
+  [ "$(id -u)" -ne 0 ] && sudo="sudo"
   case "$OS" in
     macos)
       command -v brew >/dev/null 2>&1 || die "Homebrew not found. Install it from https://brew.sh and re-run."
       brew install "$@"
       ;;
     debian)
-      local sudo=""
-      [ "$(id -u)" -ne 0 ] && sudo="sudo"
       $sudo apt-get update -y
       $sudo apt-get install -y "$@"
+      ;;
+    arch)
+      # Full sync+upgrade before installing, per Arch's partial-upgrade warning.
+      $sudo pacman -Syu --noconfirm --needed "$@"
+      ;;
+    fedora)
+      $sudo dnf install -y "$@"
       ;;
     *)
       die "Don't know how to install packages on this OS. Install manually: $*"

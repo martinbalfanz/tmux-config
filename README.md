@@ -13,14 +13,14 @@ tmux-agent-sidebar.
 
 ## Setup on a new machine
 
-One-liner (macOS or Debian/Ubuntu Linux):
+One-liner (macOS, Ubuntu/Debian, Arch, or Fedora):
 
 ```
 curl -fsSL https://raw.githubusercontent.com/martinbalfanz/tmux-config/main/install.sh | bash
 ```
 
-This installs/upgrades tmux if needed (via Homebrew on macOS, `apt` on
-Debian), clones this repo to `~/code/tmux-config`, symlinks `tmux.conf` and
+This installs/upgrades tmux if needed (via Homebrew, `apt`, `pacman`, or
+`dnf`, detected automatically), clones this repo to `~/code/tmux-config`, symlinks `tmux.conf` and
 `scripts/` into place, installs TPM, and fetches all plugins (equivalent to
 pressing `C-a I` inside tmux). It's idempotent — safe to re-run any time,
 e.g. to pick up new plugins after a config update. Any pre-existing
