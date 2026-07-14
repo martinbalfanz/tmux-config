@@ -128,14 +128,12 @@ ensure_tpm() {
 }
 
 source_tmux_conf() {
-  # TPM reads its plugin list from a running tmux server's environment,
-  # which is only populated when the server processes tmux.conf. If a
-  # server was already running before this script linked our config in
-  # (common on machines where tmux auto-starts on login), it won't have
-  # picked that up yet — force it explicitly. This also transparently
-  # starts a fresh (session-less) server when none is running yet.
-  log "Sourcing tmux.conf so TPM picks up the plugin list"
+  log "Sourcing tmux.conf"
   tmux source-file "$HOME/.tmux.conf"
+}
+
+set_tpm_env() {
+  tmux set-environment -g TMUX_PLUGIN_MANAGER_PATH "$HOME/.tmux/plugins/"
 }
 
 install_tpm_plugins() {
@@ -152,6 +150,7 @@ main() {
   link_into "$CONFIG_DIR/scripts" "$HOME/.tmux/scripts"
   ensure_tpm
   source_tmux_conf
+  set_tpm_env
   install_tpm_plugins
 
   log "Done. Start tmux, or if a server is already running: tmux source ~/.tmux.conf"
